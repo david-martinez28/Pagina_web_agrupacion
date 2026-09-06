@@ -1,0 +1,52 @@
+:80 {
+    root * /var/www/public
+
+    # ==========================================
+    # STORAGE DE LARAVEL
+    # ==========================================
+    # Las imágenes/PDF de /storage/* se sirven
+    # directamente desde /var/www/public/storage/
+    
+    @storage path /storage/*
+    handle @storage {
+        file_server
+    }
+
+    # ==========================================
+    # API LARAVEL
+    # ==========================================
+
+    @api path /api/*
+    handle @api {
+        php_fastcgi php:9000
+    }
+
+    # ==========================================
+    # VITE / REACT
+    # ==========================================
+
+    handle /_vite/* {
+        reverse_proxy react:5173
+    }
+
+    handle /@vite/* {
+        reverse_proxy react:5173
+    }
+
+    handle /@react-refresh/* {
+        reverse_proxy react:5173
+    }
+
+    handle /src/* {
+        reverse_proxy react:5173
+    }
+
+    # ==========================================
+    # TODO LO DEMÁS -> REACT
+    # ==========================================
+
+    handle {
+        reverse_proxy react:5173
+    }
+}
+
