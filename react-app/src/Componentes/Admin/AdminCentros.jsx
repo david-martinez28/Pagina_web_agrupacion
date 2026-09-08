@@ -3,8 +3,10 @@ import api from '../../api';
 
 function AdminCentros() {
   const [centros, setCentros] = useState([]);
+  const [ampasDisponibles, setAmpasDisponibles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [errorGeneral, setErrorGeneral] = useState(null);
+  const [erroresCampos, setErroresCampos] = useState({});
   const [success, setSuccess] = useState('');
   const [busqueda, setBusqueda] = useState('');
 
@@ -23,30 +25,34 @@ function AdminCentros() {
     facebook: '',
     instagram: '',
     video: '',
-    ampa_nombre: '',
-    ampa_correo: '',
-    ampa_telefono: '',
-    ampa_instagram: '',
-    ampa_facebook: '',
+    id_ampa: '',
   });
 
   const [imagen, setImagen] = useState(null);
   const [imagenPreview, setImagenPreview] = useState(null);
 
   useEffect(() => {
-    fetchCentros();
+    fetchDatos();
   }, []);
 
-  const fetchCentros = async () => {
+  const fetchDatos = async () => {
     setLoading(true);
-    setError(null);
+    setErrorGeneral(null);
     try {
-      const res = await api.get('/centros');
-      let data = res.data.data ? res.data.data : res.data;
-      setCentros(Array.isArray(data) ? data : []);
+      const [resCentros, resAmpas] = await Promise.all([
+        api.get('/centros'),
+        api.get('/ampas')
+      ]);
+
+      const dataCentros = resCentros.data.data ? resCentros.data.data : resCentros.data;
+      setCentros(Array.isArray(dataCentros) ? dataCentros : []);
+
+      const dataAmpas = resAmpas.data.data ? resAmpas.data.data : resAmpas.data;
+      setAmpasDisponibles(Array.isArray(dataAmpas) ? dataAmpas : []);
+
     } catch (err) {
-      console.error('Error al cargar centros:', err);
-      setError('No se pudieron cargar los centros educativos.');
+      console.error('Error al cargar los datos:', err);
+      setErrorGeneral('No se pudieron cargar los centros educativos o las AMPAs.');
     } finally {
       setLoading(false);
     }
@@ -72,15 +78,12 @@ function AdminCentros() {
       facebook: '',
       instagram: '',
       video: '',
-      ampa_nombre: '',
-      ampa_correo: '',
-      ampa_telefono: '',
-      ampa_instagram: '',
-      ampa_facebook: '',
+      id_ampa: '',
     });
     setImagen(null);
     setImagenPreview(null);
-    setError('');
+    setErrorGeneral('');
+    setErroresCampos({});
     setSuccess('');
     setMostrarFormulario(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -100,15 +103,12 @@ function AdminCentros() {
       facebook: centro.facebook || '',
       instagram: centro.instagram || '',
       video: centro.video || '',
-      ampa_nombre: centro.ampa?.nombre || '',
-      ampa_correo: centro.ampa?.correo || '',
-      ampa_telefono: centro.ampa?.telefono || '',
-      ampa_instagram: centro.ampa?.instagram || '',
-      ampa_facebook: centro.ampa?.facebook || '',
+      id_ampa: centro.ampa?.id_ampa || centro.id_ampa || '',
     });
     setImagen(null);
     setImagenPreview(limpiarRutaImagen(centro.imagen));
-    setError('');
+    setErrorGeneral('');
+    setErroresCampos({});
     setSuccess('');
     setMostrarFormulario(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -117,6 +117,8 @@ function AdminCentros() {
   const handleCancelar = () => {
     setMostrarFormulario(false);
     setEditandoId(null);
+    setErrorGeneral('');
+    setErroresCampos({});
     if (imagenPreview && imagenPreview.startsWith('blob:')) {
       URL.revokeObjectURL(imagenPreview);
     }
@@ -127,17 +129,17 @@ function AdminCentros() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setError('El archivo seleccionado no es una imagen válida.');
+      setErrorGeneral('El archivo seleccionado no es una imagen válida.');
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      setError('La imagen no puede superar los 2 MB.');
+      setErrorGeneral('La imagen no puede superar los 2 MB.');
       e.target.value = '';
       return;
     }
 
-    setError('');
+    setErrorGeneral('');
     setImagen(file);
     const nuevaPreview = URL.createObjectURL(file);
     if (imagenPreview && imagenPreview.startsWith('blob:')) {
@@ -156,14 +158,15 @@ function AdminCentros() {
       setSuccess('Centro eliminado correctamente.');
     } catch (err) {
       console.error('Error eliminando centro:', err);
-      setError('Hubo un error al eliminar el centro educativo.');
+      setErrorGeneral('Hubo un error al eliminar el centro educativo.');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setErrorGeneral('');
+    setErroresCampos({});
     setSuccess('');
 
     try {
@@ -178,13 +181,8 @@ function AdminCentros() {
       if (formData.facebook) dataForm.append('facebook', formData.facebook.trim());
       if (formData.instagram) dataForm.append('instagram', formData.instagram.trim());
       if (formData.video) dataForm.append('video', formData.video.trim());
-
-      // AMPA
-      if (formData.ampa_nombre) dataForm.append('ampa_nombre', formData.ampa_nombre.trim());
-      if (formData.ampa_correo) dataForm.append('ampa_correo', formData.ampa_correo.trim());
-      if (formData.ampa_telefono) dataForm.append('ampa_telefono', formData.ampa_telefono.trim());
-      if (formData.ampa_instagram) dataForm.append('ampa_instagram', formData.ampa_instagram.trim());
-      if (formData.ampa_facebook) dataForm.append('ampa_facebook', formData.ampa_facebook.trim());
+      
+      dataForm.append('id_ampa', formData.id_ampa ? formData.id_ampa : '');
 
       if (imagen instanceof File) {
         dataForm.append('imagen', imagen);
@@ -209,18 +207,13 @@ function AdminCentros() {
       }
 
       setMostrarFormulario(false);
-      await fetchCentros();
+      await fetchDatos();
     } catch (err) {
       console.error('Error guardando centro:', err);
       if (err.response?.status === 422) {
-        const errores = err.response.data.errors;
-        let mensajeAlerta = '⚠️ Laravel ha rechazado los datos:\n\n';
-        for (const campo in errores) {
-          mensajeAlerta += `❌ ${campo}: ${errores[campo][0]}\n`;
-        }
-        setError(mensajeAlerta);
+        setErroresCampos(err.response.data.errors || {});
       } else {
-        setError('Error de conexión al guardar el centro.');
+        setErrorGeneral('Error de conexión al guardar el centro.');
       }
     } finally {
       setLoading(false);
@@ -251,8 +244,8 @@ function AdminCentros() {
         )}
       </div>
 
-      {error && <div className="alert alert-danger" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
+      {errorGeneral && <div className="alert alert-danger">{errorGeneral}</div>}
 
       {/* FORMULARIO DESPLEGABLE / OCULTO */}
       {mostrarFormulario && (
@@ -267,10 +260,15 @@ function AdminCentros() {
           <form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-12 col-md-8 mb-3">
+                {erroresCampos.nombre && (
+                  <div className="text-danger fw-bold small mb-1">
+                    ⚠️ {erroresCampos.nombre[0]}
+                  </div>
+                )}
                 <label className="form-label fw-bold">Nombre del Centro</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${erroresCampos.nombre ? 'is-invalid' : ''}`}
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                   maxLength="150"
@@ -279,10 +277,15 @@ function AdminCentros() {
               </div>
 
               <div className="col-12 col-md-4 mb-3">
+                {erroresCampos.modalidad && (
+                  <div className="text-danger fw-bold small mb-1">
+                    ⚠️ {erroresCampos.modalidad[0]}
+                  </div>
+                )}
                 <label className="form-label fw-bold">Modalidad (Texto libre)</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${erroresCampos.modalidad ? 'is-invalid' : ''}`}
                   value={formData.modalidad}
                   onChange={(e) => setFormData({ ...formData, modalidad: e.target.value })}
                   placeholder="Ej: Pública, Concertada..."
@@ -292,9 +295,14 @@ function AdminCentros() {
             </div>
 
             <div className="mb-3">
+              {erroresCampos.descripcion && (
+                <div className="text-danger fw-bold small mb-1">
+                  ⚠️ {erroresCampos.descripcion[0]}
+                </div>
+              )}
               <label className="form-label fw-bold">Descripción</label>
               <textarea
-                className="form-control"
+                className={`form-control ${erroresCampos.descripcion ? 'is-invalid' : ''}`}
                 rows="3"
                 value={formData.descripcion}
                 onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
@@ -304,10 +312,15 @@ function AdminCentros() {
 
             <div className="row">
               <div className="col-12 col-md-6 mb-3">
+                {erroresCampos.email && (
+                  <div className="text-danger fw-bold small mb-1">
+                    ⚠️ {erroresCampos.email[0]}
+                  </div>
+                )}
                 <label className="form-label fw-bold">Correo Electrónico</label>
                 <input
                   type="email"
-                  className="form-control"
+                  className={`form-control ${erroresCampos.email ? 'is-invalid' : ''}`}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="centro@educacion.es"
@@ -316,10 +329,15 @@ function AdminCentros() {
               </div>
 
               <div className="col-12 col-md-6 mb-3">
+                {erroresCampos.telefono && (
+                  <div className="text-danger fw-bold small mb-1">
+                    ⚠️ {erroresCampos.telefono[0]}
+                  </div>
+                )}
                 <label className="form-label fw-bold">Teléfono</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${erroresCampos.telefono ? 'is-invalid' : ''}`}
                   value={formData.telefono}
                   onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                   placeholder="Ej: 965000000"
@@ -330,10 +348,15 @@ function AdminCentros() {
 
             <div className="row">
               <div className="col-12 col-md-6 mb-3">
+                {erroresCampos.web && (
+                  <div className="text-danger fw-bold small mb-1">
+                    ⚠️ {erroresCampos.web[0]}
+                  </div>
+                )}
                 <label className="form-label fw-bold">Sitio Web</label>
                 <input
                   type="url"
-                  className="form-control"
+                  className={`form-control ${erroresCampos.web ? 'is-invalid' : ''}`}
                   value={formData.web}
                   onChange={(e) => setFormData({ ...formData, web: e.target.value })}
                   placeholder="https://..."
@@ -342,10 +365,15 @@ function AdminCentros() {
               </div>
 
               <div className="col-12 col-md-6 mb-3">
+                {erroresCampos.video && (
+                  <div className="text-danger fw-bold small mb-1">
+                    ⚠️ {erroresCampos.video[0]}
+                  </div>
+                )}
                 <label className="form-label fw-bold">Video (URL)</label>
                 <input
                   type="url"
-                  className="form-control"
+                  className={`form-control ${erroresCampos.video ? 'is-invalid' : ''}`}
                   value={formData.video}
                   onChange={(e) => setFormData({ ...formData, video: e.target.value })}
                   placeholder="https://youtube.com/..."
@@ -355,12 +383,17 @@ function AdminCentros() {
             </div>
 
             <div className="mb-4">
+              {erroresCampos.direccion && (
+                <div className="text-danger fw-bold small mb-1">
+                  ⚠️ {erroresCampos.direccion[0]}
+                </div>
+              )}
               <label className="form-label fw-bold">Dirección</label>
               <div className="input-group mb-3">
                 <span className="input-group-text bg-white">📍 Dirección</span>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${erroresCampos.direccion ? 'is-invalid' : ''}`}
                   value={formData.direccion}
                   onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
                   placeholder="Ej: Calle Mayor, 10, Elda"
@@ -381,10 +414,15 @@ function AdminCentros() {
 
             <div className="row">
               <div className="col-12 col-md-6 mb-3">
+                {erroresCampos.instagram && (
+                  <div className="text-danger fw-bold small mb-1">
+                    ⚠️ {erroresCampos.instagram[0]}
+                  </div>
+                )}
                 <label className="form-label fw-bold">Instagram</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${erroresCampos.instagram ? 'is-invalid' : ''}`}
                   value={formData.instagram}
                   onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                   placeholder="@usuario"
@@ -393,10 +431,15 @@ function AdminCentros() {
               </div>
 
               <div className="col-12 col-md-6 mb-3">
+                {erroresCampos.facebook && (
+                  <div className="text-danger fw-bold small mb-1">
+                    ⚠️ {erroresCampos.facebook[0]}
+                  </div>
+                )}
                 <label className="form-label fw-bold">Facebook</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${erroresCampos.facebook ? 'is-invalid' : ''}`}
                   value={formData.facebook}
                   onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
                   placeholder="Página oficial"
@@ -405,81 +448,42 @@ function AdminCentros() {
               </div>
             </div>
 
-            {/* SECCIÓN AMPA */}
+            {/* SECCIÓN ASOCIACIÓN AMPA */}
             <hr className="my-4 text-muted" />
-            <h4 className="h5 fw-bold mb-3 text-dark">Información de la AMPA asociada</h4>
-
-            <div className="row">
-              <div className="col-12 col-md-6 mb-3">
-                <label className="form-label fw-bold">Nombre AMPA</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.ampa_nombre}
-                  onChange={(e) => setFormData({ ...formData, ampa_nombre: e.target.value })}
-                  placeholder="AMPA del Centro"
-                  maxLength="150"
-                />
-              </div>
-
-              <div className="col-12 col-md-6 mb-3">
-                <label className="form-label fw-bold">Correo AMPA</label>
-                <input
-                  type="email"
-                  className="form-control"
-                  value={formData.ampa_correo}
-                  onChange={(e) => setFormData({ ...formData, ampa_correo: e.target.value })}
-                  placeholder="ampa@correo.es"
-                  maxLength="150"
-                />
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-12 col-md-4 mb-3">
-                <label className="form-label fw-bold">Teléfono AMPA</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.ampa_telefono}
-                  onChange={(e) => setFormData({ ...formData, ampa_telefono: e.target.value })}
-                  placeholder="600000000"
-                  maxLength="20"
-                />
-              </div>
-
-              <div className="col-12 col-md-4 mb-3">
-                <label className="form-label fw-bold">Instagram AMPA</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.ampa_instagram}
-                  onChange={(e) => setFormData({ ...formData, ampa_instagram: e.target.value })}
-                  placeholder="@ampa"
-                  maxLength="100"
-                />
-              </div>
-
-              <div className="col-12 col-md-4 mb-3">
-                <label className="form-label fw-bold">Facebook AMPA</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.ampa_facebook}
-                  onChange={(e) => setFormData({ ...formData, ampa_facebook: e.target.value })}
-                  placeholder="AMPA Facebook"
-                  maxLength="100"
-                />
-              </div>
+            <div className="mb-4">
+              {erroresCampos.id_ampa && (
+                <div className="text-danger fw-bold small mb-1">
+                  ⚠️ {erroresCampos.id_ampa[0]}
+                </div>
+              )}
+              <label className="form-label fw-bold">AMPA Asociada</label>
+              <select
+                className={`form-select ${erroresCampos.id_ampa ? 'is-invalid' : ''}`}
+                value={formData.id_ampa}
+                onChange={(e) => setFormData({ ...formData, id_ampa: e.target.value })}
+              >
+                <option value="">-- Seleccionar AMPA --</option>
+                {ampasDisponibles.map((ampa) => (
+                  <option key={ampa.id_ampa} value={ampa.id_ampa}>
+                    {ampa.nombre} {ampa.correo ? `(${ampa.correo})` : ''}
+                  </option>
+                ))}
+              </select>
+              <div className="form-text">Selecciona la entidad AMPA correspondiente registrada en el sistema.</div>
             </div>
 
             {/* IMAGEN */}
             <hr className="my-4 text-muted" />
             <div className="mb-4">
+              {erroresCampos.imagen && (
+                <div className="text-danger fw-bold small mb-1">
+                  ⚠️ {erroresCampos.imagen[0]}
+                </div>
+              )}
               <label className="form-label fw-bold">Imagen del Centro</label>
               <input
                 type="file"
-                className="form-control"
+                className={`form-control ${erroresCampos.imagen ? 'is-invalid' : ''}`}
                 accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                 onChange={handleImagenChange}
               />

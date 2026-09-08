@@ -4,9 +4,9 @@ import CryptoJS from 'crypto-js';
 // Tu APP_KEY completa de Laravel (incluyendo el prefijo "base64:")
 const SECRET_KEY_STRING = 'base64:idjCAVNj5OuFEEfXIzj0nOr3/TJ2/yqBp3Q25AbygXs=';
 
-// 1. Instancia base con la URL de tu backend
+// 1. Instancia base con URL relativa o la IP/dominio de tu VPS
 const api = axios.create({
-  baseURL: 'http://localhost/api',
+  baseURL: '/api', // Usar '/api' permite que Caddy redirija automáticamente sin problemas de puertos o dominios
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -28,19 +28,15 @@ api.interceptors.request.use(
 // 3. Interceptor de RESPUESTAS: Descarga y descifra el encrypted_response nativo de Laravel
 api.interceptors.response.use(
   (response) => {
-    // Verificamos si la respuesta contiene el campo del cifrado nativo de Laravel
     if (response.data && response.data.encrypted_response) {
       try {
-        // El payload de Laravel viene como un JSON en Base64 que contiene {iv, value, mac}
         const jsonPayload = JSON.parse(atob(response.data.encrypted_response));
 
         const iv = CryptoJS.enc.Base64.parse(jsonPayload.iv);
         const ciphertext = CryptoJS.enc.Base64.parse(jsonPayload.value);
 
-        // Limpiamos el prefijo "base64:" usando la variable correcta SECRET_KEY_STRING
         const rawKey = CryptoJS.enc.Base64.parse(SECRET_KEY_STRING.replace('base64:', ''));
 
-        // Desciframos usando AES-256-CBC con el IV y la clave nativa de Laravel
         const decrypted = CryptoJS.AES.decrypt(
           { ciphertext: ciphertext },
           rawKey,
@@ -57,7 +53,6 @@ api.interceptors.response.use(
           throw new Error("El resultado del descifrado está vacío.");
         }
 
-        // Reemplazamos los datos cifrados por el JSON original legible
         response.data = JSON.parse(decryptedString);
       } catch (e) {
         console.error("Error crítico al descifrar el encrypted_response de Laravel:", e);

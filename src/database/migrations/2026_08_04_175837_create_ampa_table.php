@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('telefono', 20)->nullable();
             $table->string('instagram', 100)->nullable();
             $table->string('facebook', 100)->nullable();
+            $table->string("imagen")->nullable();
             
             $table->foreignId('id_administrador')
                   ->nullable()

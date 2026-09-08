@@ -6,6 +6,7 @@ import imagenPorDefecto from '../../assets/imagenes/sin_imagen.jpg';
 import imagenConvenio from '../../assets/imagenes/ENTIDAD-CONVENIADA.jpg';
 import imagenCarnet from '../../assets/imagenes/carnet-socio.jpeg';
 import imagenEducacion from '../../assets/imagenes/logo-ampas-conectadas.png';
+
 // ============================================================
 // FORMATEAR FECHA Y HORA
 // ============================================================
@@ -26,7 +27,7 @@ const formatearFechaHora = (fechaString) => {
 };
 
 // ============================================================
-// COMPROBAR SI LA NOTICIA TIENE 15 DÍAS O MENOS
+// COMPROBAR SI LA NOTICIA TIENE 30 DÍAS O MENOS
 // ============================================================
 const esNovedad = (fechaString) => {
   if (!fechaString) return false;
@@ -39,11 +40,11 @@ const esNovedad = (fechaString) => {
   }
 
   const diferenciaMs = ahora - fechaPublicacion;
-  const quinceDiasMs = 15 * 24 * 60 * 60 * 1000;
+  const treintaDiasMs = 30 * 24 * 60 * 60 * 1000;
 
   return (
     diferenciaMs >= 0 &&
-    diferenciaMs <= quinceDiasMs
+    diferenciaMs <= treintaDiasMs
   );
 };
 
@@ -102,9 +103,16 @@ function PublicacionesLista() {
           data = [];
         }
 
-        data = data.filter(
-          (pub) => pub.visibilidad === true
-        );
+        const hoy = new Date();
+        hoy.setHours(23, 59, 59, 999);
+
+        data = data.filter((pub) => {
+          if (!pub.visibilidad) return false;
+          if (!pub.fecha_publicacion) return true;
+
+          const fechaPub = new Date(pub.fecha_publicacion);
+          return fechaPub <= hoy;
+        });
 
         data.sort((a, b) => {
           const fechaA = new Date(
@@ -148,9 +156,8 @@ function PublicacionesLista() {
     if (publicaciones.length === 0) return;
 
     setCurrentIndex((prev) => {
-      return prev + 1 >= publicaciones.length
-        ? 0
-        : prev + 1;
+      const maxIndex = isDesktop ? Math.max(0, publicaciones.length - 4) : publicaciones.length - 1;
+      return prev + 1 > maxIndex ? maxIndex : prev + 1;
     });
   };
 
@@ -158,12 +165,11 @@ function PublicacionesLista() {
     if (publicaciones.length === 0) return;
 
     setCurrentIndex((prev) => {
-      return prev - 1 < 0
-        ? publicaciones.length - 1
-        : prev - 1;
+      return prev - 1 < 0 ? 0 : prev - 1;
     });
   };
 
+  // Animación automática cada 5 segundos con bucle al llegar al final
   useEffect(() => {
     if (
       isPaused ||
@@ -174,9 +180,8 @@ function PublicacionesLista() {
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => {
-        return prev + 1 >= publicaciones.length
-          ? 0
-          : prev + 1;
+        const maxIndex = isDesktop ? Math.max(0, publicaciones.length - 4) : publicaciones.length - 1;
+        return prev + 1 > maxIndex ? 0 : prev + 1;
       });
     }, 5000);
 
@@ -185,7 +190,8 @@ function PublicacionesLista() {
     };
   }, [
     isPaused,
-    publicaciones.length
+    publicaciones.length,
+    isDesktop
   ]);
 
   const [, setAhora] = useState(new Date());
@@ -225,6 +231,11 @@ function PublicacionesLista() {
     }
   }
 
+  // Comprobaciones para mostrar u ocultar las flechas de navegación
+  const maxIndex = isDesktop ? Math.max(0, publicaciones.length - 4) : publicaciones.length - 1;
+  const mostrarFlechaIzq = currentIndex > 0;
+  const mostrarFlechaDer = currentIndex < maxIndex;
+
   if (loading) {
     return (
       <p className="text-center p-5 text-secondary">
@@ -235,30 +246,10 @@ function PublicacionesLista() {
 
   return (
     <section
-      className="container-xl py-5  publicaciones-section"
+      className="container-xl py-5 publicaciones-section"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-
-      {/* ======================================================
-          IMAGEN PRINCIPAL AL PRINCIPIO (INTACTA TAL CUAL LA PEDISTE)
-      ======================================================
-      <div className="mb-5 mx-n3 mx-md-0">
-        <img 
-          src={imagenConvenio} 
-          alt="Entidad Convenio" 
-          className="w-100 shadow-sm rounded-0 rounded-md-3" 
-          style={{ 
-            height: '450px', 
-            objectFit: 'cover',
-            objectPosition: 'center'
-          }}
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = imagenPorDefecto;
-          }}
-        />
-      </div> */}
 
       {/* ======================================================
           TÍTULO PRINCIPAL
@@ -268,39 +259,36 @@ function PublicacionesLista() {
       </h1>
 
       {/* ======================================================
-          BANNERS SUPERIORES
+          BANNERS SUPERIORES (ALTURA UNIFORME CON SOMBRA)
       ====================================================== */}
-      <div className="row g-4 mb-5 justify-content-center">
+      <div className="row g-4 mb-5 justify-content-center align-items-stretch">
 
         {/* BANNER 1 */}
-        <div className="col-12 col-md-6">
+        <div className="col-12 col-md-6 d-flex">
           <Link
             to="/secciones"
-            className="text-decoration-none"
+            className="text-decoration-none w-100 d-flex"
           >
-            <div className="card border-0 shadow-sm overflow-hidden position-relative text-white banner-card">
+            <div className="card border-0 shadow-sm overflow-hidden position-relative text-white banner-card w-100 d-flex flex-column card-seccion">
 
               <img
                 src={imagenCarnet}
                 alt="Carnet de Socio y Ventajas"
-                className="w-100 object-fit-cover"
+                className="w-100"
                 style={{
-                  height: '220px',
-                  backgroundColor: '#343a40'
+                  height: '200px',
+                  objectFit: 'contain',
+                  backgroundColor: '#ffffff'
                 }}
               />
 
-              <div className=" bottom-0 start-0 w-100 p-3 bg-dark bg-opacity-75">
-
+              <div className="p-3 bg-dark bg-opacity-75 flex-grow-1 d-flex flex-column justify-content-center">
                 <h3 className="h5 mb-1 text-white text-uppercase">
                   Carnet de Socia/o
                 </h3>
-
                 <p className="mb-0 small text-light">
-                  Haz clic aquí para ver las secciones y
-                  empresas colaboradoras.
+                  Haz clic aquí para ver las secciones y empresas colaboradoras.
                 </p>
-
               </div>
 
             </div>
@@ -308,33 +296,31 @@ function PublicacionesLista() {
         </div>
 
         {/* BANNER 2 */}
-        <div className="col-12 col-md-6">
+        <div className="col-12 col-md-6 d-flex">
           <Link
             to="https://elda.ampasconectadas.com/landing"
-            className="text-decoration-none"
+            className="text-decoration-none w-100 d-flex"
           >
-            <div className="card border-0 shadow-sm overflow-hidden position-relative text-white banner-card">
+            <div className="card border-0 shadow-sm overflow-hidden position-relative text-white banner-card w-100 d-flex flex-column card-seccion">
 
               <img
                 src={imagenEducacion}
                 alt="Información Institucional"
-                className="w-100 object-fit-cover"
+                className="w-100"
                 style={{
-                  height: '220px',
-                  backgroundColor: 'white'
+                  height: '200px',
+                  objectFit: 'contain',
+                  backgroundColor: '#ffffff'
                 }}
               />
 
-              <div className=" bottom-0 start-0 w-100 p-3 bg-dark bg-opacity-75">
-
+              <div className="p-3 bg-dark bg-opacity-75 flex-grow-1 d-flex flex-column justify-content-center">
                 <h3 className="h5 mb-1 text-white text-uppercase">
                   Ampas Conectadas
                 </h3>
-
                 <p className="mb-0 small text-light">
                   Desde aquí podrás apuntarte a tu AMPA, inscribirte a las extraescolares, hacer pagos y gestiones administrativas
                 </p>
-
               </div>
 
             </div>
@@ -351,32 +337,34 @@ function PublicacionesLista() {
       </h2>
 
       {/* ======================================================
-          CARRUSEL
+          CARRUSEL DE NOTICIAS
       ====================================================== */}
       <div className="position-relative d-flex align-items-center justify-content-center px-4 px-md-5">
 
-        <button
-          type="button"
-          onClick={handlePrev}
-          className="btn position-absolute start-0 nav-arrow z-3"
-          aria-label="Anterior"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={3}
-            stroke="currentColor"
-            width="40"
-            height="40"
+        {mostrarFlechaIzq && (
+          <button
+            type="button"
+            onClick={handlePrev}
+            className="btn position-absolute start-0 nav-arrow z-3"
+            aria-label="Anterior"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 19.5L8.25 12l7.5-7.5"
-            />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={3}
+              stroke="currentColor"
+              width="40"
+              height="40"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5L8.25 12l7.5-7.5"
+              />
+            </svg>
+          </button>
+        )}
 
         <div className="row g-4 w-100 flex-grow-1 noticias-carrusel">
 
@@ -398,9 +386,8 @@ function PublicacionesLista() {
                 key={pub.id_publicacion}
               >
 
-                <article className="card h-100 border rounded-0 shadow-sm w-100 publicacion-card">
+                <article className="card h-100 border rounded-0 shadow-sm w-100 publicacion-card card-seccion">
 
-                  {/* IMAGEN DE NOTICIA (AJUSTE DINÁMICO) */}
                   <div
                     className="img-container position-relative bg-light d-flex align-items-center justify-content-center"
                     style={{
@@ -415,7 +402,7 @@ function PublicacionesLista() {
                       style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: 'contain' // 👈 Ajuste dinámico sin recortar
+                        objectFit: 'cover'
                       }}
                       onError={(e) => {
                         e.currentTarget.onerror = null;
@@ -481,33 +468,35 @@ function PublicacionesLista() {
 
         </div>
 
-        <button
-          type="button"
-          onClick={handleNext}
-          className="btn position-absolute end-0 nav-arrow z-3"
-          aria-label="Siguiente"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={3}
-            stroke="currentColor"
-            width="40"
-            height="40"
+        {mostrarFlechaDer && (
+          <button
+            type="button"
+            onClick={handleNext}
+            className="btn position-absolute end-0 nav-arrow z-3"
+            aria-label="Siguiente"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8.25 4.5l7.5 7.5-7.5 7.5"
-            />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={3}
+              stroke="currentColor"
+              width="40"
+              height="40"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8.25 4.5l7.5 7.5-7.5 7.5"
+              />
+            </svg>
+          </button>
+        )}
 
       </div>
 
       {/* ======================================================
-          CENTROS EDUCATIVOS
+          CENTROS EDUCATIVOS (CARRUSEL INFINITO)
       ====================================================== */}
       <div className="mt-5 pt-4 mb-5 pb-5 border-top">
 
@@ -515,82 +504,63 @@ function PublicacionesLista() {
           Centros Educativos
         </h3>
 
-        <div className="d-flex justify-content-center flex-wrap gap-5 px-3">
+        {centros.length > 0 ? (
+          <div className="overflow-hidden position-relative w-100 py-4 centros-marquee-container">
+            <div className="d-flex align-items-center centros-marquee-track">
+              {/* Duplicamos el array de centros para lograr el efecto infinito sin saltos */}
+              {[...centros, ...centros].map((centro, index) => {
+                const idCentro = centro.id_centro || centro.id;
+                const centroImagenUrl = limpiarRutaImagen(centro.imagen) || imagenPorDefecto;
 
-          {centros.length > 0 ? (
-
-            centros.map((centro) => {
-
-              const idCentro =
-                centro.id_centro ||
-                centro.id;
-
-              const centroImagenUrl =
-                limpiarRutaImagen(
-                  centro.imagen
-                ) || imagenPorDefecto;
-
-              return (
-                <div
-                  key={idCentro}
-                  className="text-center d-flex flex-column align-items-center"
-                >
-
-                  <Link
-                    to={`/centros/${idCentro}`}
-                    className="text-decoration-none text-dark"
+                return (
+                  <div
+                    key={`${idCentro}-${index}`}
+                    className="text-center d-flex flex-column align-items-center mx-4 px-2 flex-shrink-0"
+                    style={{ width: '150px' }}
                   >
-
-                    {/* IMAGEN DE CENTRO EDUCATIVO (AJUSTE DINÁMICO) */}
-                    <div
-                      className="rounded-circle shadow-sm d-flex align-items-center justify-content-center mb-3 bg-light overflow-hidden"
-                      style={{
-                        width: '80px',
-                        height: '80px',
-                        margin: '0 auto'
-                      }}
+                    <Link
+                      to={`/centros/${idCentro}`}
+                      className="text-decoration-none text-dark w-100"
                     >
-
-                      <img
-                        src={centroImagenUrl}
-                        alt={centro.nombre}
-                        className="w-100 h-100"
+                      <div
+                        className="rounded-circle shadow-sm d-flex align-items-center justify-content-center mb-3 bg-light overflow-hidden mx-auto border card-seccion"
                         style={{
-                          objectFit: 'contain' // 👈 Ajuste dinámico sin recortar
+                          width: '80px',
+                          height: '80px'
                         }}
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src =
-                            imagenPorDefecto;
+                      >
+                        <img
+                          src={centroImagenUrl}
+                          alt={centro.nombre}
+                          className="w-100 h-100"
+                          style={{ objectFit: 'cover' }}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = imagenPorDefecto;
+                          }}
+                        />
+                      </div>
+                      <span
+                        className="text-muted small fw-medium text-uppercase d-block mt-2 w-100 px-1"
+                        style={{
+                          letterSpacing: '0.5px',
+                          lineHeight: '1.2'
                         }}
-                      />
-
-                    </div>
-
-                    <span
-                      className="text-muted small fw-medium text-uppercase d-block mt-2"
-                      style={{
-                        letterSpacing: '0.5px'
-                      }}
-                    >
-                      {centro.nombre}
-                    </span>
-
-                  </Link>
-
-                </div>
-              );
-            })
-
-          ) : (
-
-            <p className="text-muted text-center small">
-              No hay centros educativos registrados.
-            </p>
-
-          )}
-
-        </div>
+                        title={centro.nombre}
+                      >
+                        {centro.nombre}
+                      </span>
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <p className="text-muted text-center small">
+            No hay centros educativos registrados.
+          </p>
+        )}
 
       </div>
 

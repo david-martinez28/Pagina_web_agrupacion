@@ -34,7 +34,7 @@ function CriteriosEvaluacion() {
         &larr; Volver al inicio
       </Link>
 
-      <h1 className="text-center display-5 mb-5 text-uppercase fw-light">Criterios de Evaluación</h1>
+      <h1 className="text-center display-5 mb-5 text-uppercase fw-light">Criterios de Matriculación</h1>
       
       {data ? (
         <div className="row g-4">

@@ -13,7 +13,7 @@ class Empresa extends Model
     protected $fillable = [
         'nombre', 'email', 'direccion', 'telefono', 
         'instagram', 'facebook', 'ofertas', 'condiciones', 
-        'id_seccion', 'id_administrador','imagen'
+        'id_seccion', 'id_administrador','imagen', 'web'
     ];
 
     // Una empresa pertenece a una sección

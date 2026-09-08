@@ -20,6 +20,7 @@ class EmpresaResource extends JsonResource
             'instagram'     => $this->instagram,
             'facebook'      => $this->facebook,
             'ofertas'       => $this->ofertas,
+            'web'           => $this->web,
             'condiciones'   => $this->condiciones,
             
             // 👈 IMPORTANTE: Enviamos el ID de la sección plano para que coincida con el <select> y la validación

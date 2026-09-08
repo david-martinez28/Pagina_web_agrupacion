@@ -119,15 +119,15 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Tarjeta de Criterios de Evaluación */}
+        {/* Tarjeta de Criterios de Matriculación */}
         <div className="col-12 col-md-4">
           <div className="card shadow-sm border-0 h-100 p-4 text-center d-flex flex-column">
             <div className="mb-3">
               <span className="fs-1">📋</span>
             </div>
-            <h3 className="h5 fw-bold">Criterios de Evaluación</h3>
+            <h3 className="h5 fw-bold">Criterios de Matriculación</h3>
             <p className="text-muted small mb-4">
-              Modifica las directrices y criterios de evaluación publicados en la web.
+              Modifica las directrices y criterios de matriculación publicados en la web.
             </p>
             <Link to="/admin/criterios" className="btn btn-dark mt-auto w-100">
               Gestionar
@@ -145,6 +145,21 @@ function Dashboard() {
               Gestiona las fechas y plazos de matriculación para los centros educativos.
             </p>
             <Link to="/admin/calendario" className="btn btn-dark mt-auto w-100">
+              Gestionar
+            </Link>
+          </div>
+        </div>
+        {/* Tarjeta de Ampas */}
+        <div className="col-12 col-md-4">
+          <div className="card shadow-sm border-0 h-100 p-4 text-center d-flex flex-column">
+            <div className="mb-3">
+              <span className="fs-1">🤝</span>
+            </div>
+            <h3 className="h5 fw-bold">Ampas</h3>
+            <p className="text-muted small mb-4">
+              Administra las ampas y sus respectivas convocatorias.
+            </p>
+            <Link to="/admin/ampas" className="btn btn-dark mt-auto w-100">
               Gestionar
             </Link>
           </div>

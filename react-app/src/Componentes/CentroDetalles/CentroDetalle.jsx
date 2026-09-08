@@ -12,6 +12,7 @@ function CentroDetalle() {
   useEffect(() => {
     const idSeguro = encodeURIComponent(id);
 
+    // La petición a /centros/{id} ya trae la información del centro y su ampa relacionada gracias al with('ampa') del backend
     api.get(`/centros/${idSeguro}`)
       .then((res) => {
         const data = res.data.data ? res.data.data : res.data;
@@ -23,6 +24,14 @@ function CentroDetalle() {
       })
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Función para limpiar y construir la URL segura de las imágenes
+  const limpiarRutaImagen = (img) => {
+    if (!img) return null;
+    if (img.startsWith('http://') || img.startsWith('https://')) return img;
+    const ruta = String(img).replace(/\\/g, '/').replace(/^\/+/, '').replace(/^storage\//, '');
+    return `/storage/${ruta}`;
+  };
 
   if (loading) {
     return (
@@ -45,25 +54,24 @@ function CentroDetalle() {
     );
   }
 
-  const imagenCentro = centro.imagen || imagenPorDefecto;
+  const imagenCentro = limpiarRutaImagen(centro.imagen) || imagenPorDefecto;
+  // Obtenemos la imagen del ampa asociada o usamos la imagen por defecto si no tiene
+  const imagenAmpa = centro.ampa?.imagen ? (limpiarRutaImagen(centro.ampa.imagen) || imagenPorDefecto) : imagenPorDefecto;
+
   // Función para limpiar y transformar URLs de YouTube al formato embed
   const obtenerUrlEmbed = (url) => {
     if (!url) return '';
-
-    // Si ya es un embed, la dejamos tal cual
     if (url.includes('/embed/')) return url;
 
-    // Si es un enlace de tipo youtu.be/ID
     let match = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
     if (match) return `https://www.youtube.com/embed/${match[1]}`;
 
-    // Si es un enlace de tipo youtube.com/watch?v=ID o m.youtube.com/...
     match = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
     if (match) return `https://www.youtube.com/embed/${match[1]}`;
 
-    // Si no coincide con nada de YouTube, devolvemos la original por si es otro servicio (Vimeo, etc.)
     return url;
   };
+  console.log({"ampas": centro.ampa});
 
   return (
     <section className="container-xl py-5 bg-white">
@@ -162,12 +170,30 @@ function CentroDetalle() {
                   </div>
                 )}
 
-                {/* Datos de la AMPA */}
+                {/* Datos de la AMPA (Viene directamente relacionada en el JSON del centro) */}
                 {centro.ampa ? (
                   <div className="bg-white p-4 rounded shadow-sm border">
-                    <h4 className="h5 mb-4 text-uppercase fw-bold text-center border-bottom pb-2">
+                    <h4 className="h5 mb-3 text-uppercase fw-bold text-center border-bottom pb-2">
                       Contacto AMPA
                     </h4>
+
+                    {/* Imagen / Logotipo de la AMPA */}
+                    <div className="text-center mb-3">
+                      <div 
+                        className="rounded-circle shadow-sm bg-light d-flex align-items-center justify-content-center mx-auto border overflow-hidden" 
+                        style={{ width: '80px', height: '80px' }}
+                      >
+                        <img
+                          src={imagenAmpa}
+                          alt={centro.ampa.nombre}
+                          className="w-100 h-100 object-fit-cover"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = imagenPorDefecto;
+                          }}
+                        />
+                      </div>
+                    </div>
 
                     <ul className="list-unstyled mb-0">
                       {centro.ampa.telefono && (

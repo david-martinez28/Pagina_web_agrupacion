@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api';
-import imagenPorDefecto from '../../assets/imagenes/sin_imagen.jpg'; // ⚠️ Ajusta esta ruta si es necesario
+import imagenPorDefecto from '../../assets/imagenes/sin_imagen.jpg';
 
 // Función para formatear la fecha y hora a DD/MM/YYYY a las HH:mm
 const formatearFechaHora = (fechaString) => {
@@ -104,13 +104,17 @@ function NoticiaDetalle() {
         <span>Publicado el {formatearFechaHora(noticia.fecha_publicacion)}</span>
       </div>
 
-      {/* CONTENEDOR DE LA IMAGEN */}
-      <div className="mb-4 shadow-sm" style={{ maxHeight: '450px', overflow: 'hidden', backgroundColor: '#f8f9fa' }}>
+      {/* CONTENEDOR DE LA IMAGEN (SIN RECORTES) */}
+      <div className="mb-4 shadow-sm bg-light text-center rounded overflow-hidden d-flex align-items-center justify-content-center p-2" style={{ maxHeight: '500px' }}>
         <img 
           src={imagenUrl} 
           alt={noticia.titulo} 
-          className="w-100 h-100"
-          style={{ objectFit: 'cover' }}
+          className="img-fluid"
+          style={{ 
+            maxHeight: '480px', 
+            width: '100%', 
+            objectFit: 'contain' // 👈 Evita recortes y muestra la imagen completa
+          }}
           onError={(e) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = imagenPorDefecto;

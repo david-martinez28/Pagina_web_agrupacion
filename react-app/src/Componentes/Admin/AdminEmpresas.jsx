@@ -18,6 +18,7 @@ function AdminEmpresas() {
     direccion: '',
     telefono: '',
     id_seccion: '',
+    web: '',
     instagram: '',
     facebook: '',
     ofertas: '',
@@ -64,6 +65,7 @@ function AdminEmpresas() {
       direccion: '',
       telefono: '',
       id_seccion: '',
+      web: '',
       instagram: '',
       facebook: '',
       ofertas: '',
@@ -93,6 +95,7 @@ function AdminEmpresas() {
       direccion: empresa.direccion || '',
       telefono: empresa.telefono || '',
       id_seccion: seccionIdAsociada !== '' ? String(seccionIdAsociada) : '',
+      web: empresa.web || '',
       instagram: empresa.instagram || '',
       facebook: empresa.facebook || '',
       ofertas: empresa.ofertas || '',
@@ -133,6 +136,7 @@ function AdminEmpresas() {
       dataToSend.append('telefono', formData.telefono.trim());
       dataToSend.append('id_seccion', formData.id_seccion);
 
+      if (formData.web) dataToSend.append('web', formData.web.trim());
       if (formData.instagram) dataToSend.append('instagram', formData.instagram.trim());
       if (formData.facebook) dataToSend.append('facebook', formData.facebook.trim());
       if (formData.ofertas) dataToSend.append('ofertas', formData.ofertas.trim());
@@ -339,7 +343,20 @@ function AdminEmpresas() {
             </div>
 
             <div className="row">
-              <div className="col-12 col-md-6 mb-3">
+              <div className="col-12 col-md-4 mb-3">
+                <label className="form-label fw-bold">Sitio Web <span className="text-muted fw-normal">(Opcional)</span></label>
+                <input
+                  type="text"
+                  className={`form-control ${erroresFormulario.web ? 'is-invalid' : ''}`}
+                  value={formData.web || ''}
+                  onChange={(e) => setFormData({ ...formData, web: e.target.value })}
+                  placeholder="Ej: https://www.tuweb.com"
+                  maxLength="255"
+                />
+                {erroresFormulario.web && <div className="invalid-feedback">{erroresFormulario.web[0]}</div>}
+              </div>
+
+              <div className="col-12 col-md-4 mb-3">
                 <label className="form-label fw-bold">Instagram <span className="text-muted fw-normal">(Opcional)</span></label>
                 <input
                   type="text"
@@ -352,7 +369,7 @@ function AdminEmpresas() {
                 {erroresFormulario.instagram && <div className="invalid-feedback">{erroresFormulario.instagram[0]}</div>}
               </div>
 
-              <div className="col-12 col-md-6 mb-3">
+              <div className="col-12 col-md-4 mb-3">
                 <label className="form-label fw-bold">Facebook <span className="text-muted fw-normal">(Opcional)</span></label>
                 <input
                   type="text"

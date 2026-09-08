@@ -5,7 +5,6 @@
   cursor: pointer;
 }
 
-
 .text-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -13,17 +12,64 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.noticias{
-  background-color: black; /* Color de fondo gris claro */
-  border: 1px solid #dee2e6; /* Borde gris */
+
+.noticias {
+  background-color: black;
+  border: 1px solid #dee2e6;
 }
 
 /* --- MÓVIL: Mostrar solo 1 tarjeta e ir pasando con el índice --- */
 @media (max-width: 767px) {
   .noticias-carrusel-flex .noticia-card-wrapper {
-    display: none !important; /* Ocultamos todas por defecto */
+    display: none !important;
   }
-
-  /* Mostramos únicamente la tarjeta cuyo índice coincide (lo manejamos por CSS o clases, 
-     pero para hacerlo más limpio con JS puro podemos añadir una clase 'active' o usar CSS variables) */
 }
+
+/* Animación infinita de centros educativos */
+@keyframes scrollCentros {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.centros-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: scrollCentros 25s linear infinite;
+}
+
+.centros-marquee-container:hover .centros-marquee-track {
+  animation-play-state: paused;
+}
+/* ============================================================
+   ESTILOS PERSONALIZADOS PARA PUBLICACIONES Y TARJETAS
+   ============================================================ */
+
+/* Sombra pronunciada y visible por defecto */
+.card-seccion {
+  background-color: #ffffff !important;
+  transition: all 0.3s ease-in-out !important;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.18) !important; /* Sombra base más oscura y amplia */
+  border: 1px solid rgba(0, 0, 0, 0.08) !important; /* Borde sutil para definir el contorno */
+}
+
+.card-seccion:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 1rem 2.5rem rgba(0, 128, 0, 0.4) !important; /* Sombra verde intensa al pasar el ratón */
+}
+
+.publicacion-card {
+  background-color: #ffffff !important;
+  transition: all 0.3s ease-in-out !important;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.18) !important; /* Sombra base más oscura y amplia */
+  border: 1px solid rgba(0, 0, 0, 0.08) !important; /* Borde sutil para definir el contorno */
+}
+
+.publicacion-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 1rem 2.5rem rgba(0, 128, 0, 0.4) !important;
+}
+

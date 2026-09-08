@@ -19,6 +19,7 @@ class Ampa extends Model
         'instagram',
         'facebook',
         'id_administrador',
+        'imagen',
     ];
 
     // Relaciones

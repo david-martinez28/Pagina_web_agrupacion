@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './navbar.css'; // Importa el archivo CSS para estilos personalizados
 import logoagrupacion from '../../assets/imagenes/logo-agrupacion.png';
+
 function NavbarOffcanvas() {
     // Estado para controlar si el menú lateral está abierto o cerrado en móvil
     const [abierto, setAbierto] = useState(false);
@@ -27,16 +28,16 @@ function NavbarOffcanvas() {
             <nav className="navbar navbar-expand-lg navbar-dark  sticky-top shadow-sm navbar-custom">
                 <div className="container-xl d-flex justify-content-between align-items-center">
 
-                    {/* LOGO Y NOMBRE */}
+                    {/* LOGO Y NOMBRE (Texto más pequeño con fs-6 o estilo propio) */}
                     <Link className="navbar-brand d-flex align-items-center gap-2" to="/" onClick={cerrarMenu}>
-                        <span className="fs-5 text-uppercase fw-light">
-                            <img src={logoagrupacion} alt="Logo Agrupación" className="" style={{ maxHeight: '50px' }} />
-                            Agrupacion local de ampas de elda
+                        <span className="fs-6 text-uppercase fw-light d-flex align-items-center gap-2">
+                            <img src={logoagrupacion} alt="Logo Agrupación" style={{ maxHeight: '40px' }} />
+                            <span>Agrupacion local de ampas de elda</span>
                         </span>
                     </Link>
 
                     {/* --- MENÚ DE ESCRITORIO --- */}
-                    <div className="collapse navbar-collapse d-none d-lg-flex w-100">
+                    <div className="collapse navbar-collapse d-none d-lg-flex w-100 justify-content-between">
                         {/* Enlaces principales alineados a la izquierda */}
                         <ul className="navbar-nav align-items-center gap-4 mb-2 mb-lg-0 ms-4">
                             <li className="nav-item">
@@ -50,7 +51,7 @@ function NavbarOffcanvas() {
                             </li>
                             
                             <li className="nav-item">
-                                <Link className="nav-link" to="/criterios-evaluacion" onClick={cerrarMenu}>Criterios de Evaluación</Link>
+                                <Link className="nav-link" to="/criterios-evaluacion" onClick={cerrarMenu}>Criterios de Matriculación</Link>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/secciones" onClick={cerrarMenu}>Carnet Socio</Link>
@@ -60,20 +61,23 @@ function NavbarOffcanvas() {
                             </li>   
                         </ul>
 
-                        {/* --- BOTÓN DE ADMINISTRACIÓN (ESCRITORIO) DINÁMICO --- */}
-                        <ul className="navbar-nav ms-auto align-items-center">
-                            <li className="nav-item">
-                                {isAuth ? (
-                                    <Link to="/admin/dashboard" className="btn btn-light btn-sm px-3 fw-bold" onClick={cerrarMenu}>
-                                        Panel Admin
-                                    </Link>
-                                ) : (
-                                    <Link to="/login" className="btn btn-outline-light btn-sm px-3" onClick={cerrarMenu}>
-                                        Administración
-                                    </Link>
-                                )}
-                            </li>
-                        </ul>
+                        {/* --- ZONA DERECHA: TRADUCTOR Y ADMINISTRACIÓN (ESCRITORIO) --- */}
+                        <div className="d-flex align-items-center gap-3">
+                        
+                            <ul className="navbar-nav align-items-center mb-0">
+                                <li className="nav-item">
+                                    {isAuth ? (
+                                        <Link to="/admin/dashboard" className="btn btn-light btn-sm px-3 fw-bold" onClick={cerrarMenu}>
+                                            Panel Admin
+                                        </Link>
+                                    ) : (
+                                        <Link to="/login" className="btn btn-outline-light btn-sm px-3" onClick={cerrarMenu}>
+                                            Administración
+                                        </Link>
+                                    )}
+                                </li>
+                            </ul>
+                        </div>
                     </div>
 
                     {/* BOTÓN HAMBURGUESA (Visible solo en móviles) */}
@@ -135,8 +139,10 @@ function NavbarOffcanvas() {
                         </li>
                     </ul>
 
-                    {/* --- BOTÓN DE ADMINISTRACIÓN (MÓVIL) DINÁMICO --- */}
-                    <div className="mt-auto border-top border-secondary pt-4">
+                    {/* ZONA INFERIOR MÓVIL: TRADUCTOR Y ADMINISTRACIÓN */}
+                    <div className="mt-auto border-top border-secondary pt-4 d-flex flex-column gap-3">
+                        
+
                         {isAuth ? (
                             <Link to="/admin/dashboard" className="btn btn-light w-100 fw-bold" onClick={cerrarMenu}>
                                 Ir al Panel Admin

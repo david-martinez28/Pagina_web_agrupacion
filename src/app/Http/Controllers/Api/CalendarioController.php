@@ -28,8 +28,10 @@ class CalendarioController extends Controller
         ]);
 
         if ($request->hasFile('imagen')) {
-            $validated['imagen'] = $request->file('imagen')
-                ->store('calendario', 'public');
+            $path = $request->file('imagen')->store('calendario', 'public');
+            // Guardamos la ruta relativa limpia o la URL según prefieras, 
+            // asegurando que coincida con el Resource
+            $validated['imagen'] = '/storage/' . $path;
         }
 
         $calendario = Calendario::create($validated);
@@ -55,40 +57,25 @@ class CalendarioController extends Controller
             'id_administrador' => 'nullable|exists:administrador,id_administrador',
         ]);
 
-        /*
-         * Si llega una imagen nueva:
-         *
-         * 1. Guardamos primero la nueva imagen.
-         * 2. Eliminamos la imagen antigua.
-         * 3. Guardamos la nueva ruta en la BD.
-         */
         if ($request->hasFile('imagen')) {
+            $path = $request->file('imagen')->store('calendario', 'public');
 
-            // Guardar la imagen nueva
-            $nuevaImagen = $request->file('imagen')
-                ->store('calendario', 'public');
-
-            // Guardar temporalmente la imagen anterior
-            $imagenAnterior = $calendario->imagen;
-
-            // Actualizar la BD con la nueva imagen
-            $validated['imagen'] = $nuevaImagen;
-
-            $calendario->update($validated);
-
-            // Eliminar la imagen anterior después de actualizar
-            if (
-                $imagenAnterior &&
-                Storage::disk('public')->exists($imagenAnterior)
-            ) {
-                Storage::disk('public')->delete($imagenAnterior);
+            // Eliminar imagen anterior si existe físicamente
+            if ($calendario->imagen) {
+                // Extraer la ruta relativa eliminando el dominio o /storage/ inicial
+                $relativePath = str_replace('/storage/', '', parse_url($calendario->imagen, PHP_URL_PATH));
+                if (Storage::disk('public')->exists($relativePath)) {
+                    Storage::disk('public')->delete($relativePath);
+                }
             }
 
+            $validated['imagen'] = '/storage/' . $path;
         } else {
-            // Si no se ha enviado una imagen nueva,
-            // mantenemos la imagen existente.
-            $calendario->update($validated);
+            unset($validated['imagen']);
         }
+
+        // Si se envió _method en el FormData, Laravel lo maneja, pero con POST directo evitamos fallos
+        $calendario->update($validated);
 
         return new CalendarioResource(
             $calendario->fresh()->load('administrador')
@@ -97,11 +84,11 @@ class CalendarioController extends Controller
 
     public function destroy(Calendario $calendario)
     {
-        if (
-            $calendario->imagen &&
-            Storage::disk('public')->exists($calendario->imagen)
-        ) {
-            Storage::disk('public')->delete($calendario->imagen);
+        if ($calendario->imagen) {
+            $relativePath = str_replace('/storage/', '', parse_url($calendario->imagen, PHP_URL_PATH));
+            if (Storage::disk('public')->exists($relativePath)) {
+                Storage::disk('public')->delete($relativePath);
+            }
         }
 
         $calendario->delete();
@@ -111,4 +98,3 @@ class CalendarioController extends Controller
         ], Response::HTTP_OK);
     }
 }
-

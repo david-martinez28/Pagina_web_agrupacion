@@ -6,7 +6,7 @@ import PublicacionesLista from './Componentes/Inicio/PublicacionesLista';
 import NoticiaDetalle from './Componentes/NOticiaDetalle/NoticiaDetalle';
 import CentrosLista from './Componentes/Centro/CentrosLista';
 import CentroDetalle from './Componentes/CentroDetalles/CentroDetalle';
-import ConcejaliaDetalle from './Componentes/Concejalia/ConcejaliaDEtalle';
+import ConcejaliaDetalle from './Componentes/Concejalia/ConcejaliaDetalle';
 import CriteriosEvaluacion from './Componentes/CriteriosEvaluacion/CriteriosEvaluacion';
 import SeccionesLista from './Componentes/Secciones/SeccionesLista';
 import EmpresasPorSeccion from './Componentes/Secciones/SeccionesPorSeccion';
@@ -23,6 +23,7 @@ import AdminSecciones from './Componentes/Admin/AdminSecciones';
 import AdminConcejalia from './Componentes/Admin/AdminConcejalia'; 
 import AdminCriterios from './Componentes/Admin/AdminCriterios';
 import AdminCalendario from './Componentes/Admin/AdminCalendario'; 
+import AdminAmpas from './Componentes/Admin/AdminAmpas';
 
 
 const router = createBrowserRouter([
@@ -118,7 +119,11 @@ const router = createBrowserRouter([
           {
             path: 'calendario',
             element: <AdminCalendario />, 
-          }
+          },
+          {
+            path: 'ampas',
+            element: <AdminAmpas />,
+          },
         ]
       }
     ]

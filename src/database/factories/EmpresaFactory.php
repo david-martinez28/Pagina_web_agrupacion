@@ -17,6 +17,7 @@ class EmpresaFactory extends Factory
             'instagram' => '@' . $this->faker->lexify('????????'),
             'facebook' => $this->faker->company() . ' Oficial',
             'imagen' => 'empresas/default.jpg',
+            'web' => $this->faker->url(),
             'ofertas' => '10% de descuento en todos los servicios presentando el carnet de socio.',
             'condiciones' => 'No acumulable a otras ofertas vigentes. Válido durante todo el año escolar.',
             // Asigna la empresa de forma aleatoria a una sección existente

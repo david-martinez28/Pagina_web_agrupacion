@@ -47,8 +47,11 @@ Route::middleware(['encrypt.api'])->group(function () {
     Route::get('/concejalia-educacion', [ConcejaliaEducacionController::class, 'index']);
 
     //Calendario Matriculacion
-    route::get('/calendarios', [CalendarioController::class, 'index']);
+    Route::get('/calendarios', [CalendarioController::class, 'index']);
 
+    //Ampas
+    Route::get('/ampas', [AmpaController::class, 'index']);
+    Route::get('/ampas/{ampa}', [AmpaController::class, 'show']);
 
 });
 
@@ -81,7 +84,7 @@ Route::middleware(['auth:sanctum', 'encrypt.api'])->group(function () {
     Route::put('/secciones/{seccion}', [SeccionController::class, 'update']);
     Route::delete('/secciones/{seccion}', [SeccionController::class, 'destroy']);
 
-    // Concejalía de Educación (Admin - Soporta POST/PUT según prefieras actualizar)
+    // Concejalía de Educación (Admin)
     Route::post('/concejalia-educacion', [ConcejaliaEducacionController::class, 'store']);
     Route::put('/concejalia-educacion', [ConcejaliaEducacionController::class, 'update']);
 
@@ -90,6 +93,11 @@ Route::middleware(['auth:sanctum', 'encrypt.api'])->group(function () {
 
     // Calendario Matriculacion (Admin)
     Route::post('/calendarios', [CalendarioController::class, 'store']);
-    Route::put('/calendarios/{id_calendario}', [CalendarioController::class, 'update']);
-    Route::delete('/calendarios/{id_calendario}', [CalendarioController::class, 'destroy']);
+    Route::put('/calendarios/{calendario}', [CalendarioController::class, 'update']);
+    Route::delete('/calendarios/{calendario}', [CalendarioController::class, 'destroy']);
+
+    // Ampas (Admin)
+    Route::post('/ampas', [AmpaController::class, 'store']);
+    Route::put('/ampas/{ampa}', [AmpaController::class, 'update']);
+    Route::delete('/ampas/{ampa}', [AmpaController::class, 'destroy']);
 });

@@ -16,6 +16,7 @@ class AmpaFactory extends Factory
             'instagram'        => '@ampa_' . fake()->userName(),
             'facebook'         => 'ampa.' . fake()->userName(),
             'id_administrador' => Administrador::factory(),
+            "imagen"           => null, // Puedes asignar una imagen por defecto o dejarlo como null
         ];
     }
 }

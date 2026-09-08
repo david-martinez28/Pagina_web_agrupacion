@@ -24,6 +24,14 @@ function CentrosLista() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Función auxiliar para limpiar y construir la URL de cualquier imagen
+  const limpiarRutaImagen = (img) => {
+    if (!img) return null;
+    if (img.startsWith('http')) return img;
+    const rutaLimpia = String(img).replace(/\\/g, '').replace(/^\/?(storage\/)?/, '');
+    return `/storage/${rutaLimpia}`;
+  };
+
   if (loading) {
     return (
       <div className="container-xl py-5 text-center">
@@ -75,20 +83,15 @@ function CentrosLista() {
             {listaCentros.map((centro) => {
               const idCentro = centro.id_centro || centro.id;
 
-              // Limpieza y construcción segura de la URL de la imagen para Caddy
-              const limpiarRutaImagen = (img) => {
-                if (!img) return null;
-                if (img.startsWith('http')) return img;
-                const rutaLimpia = String(img).replace(/\\/g, '').replace(/^\/?(storage\/)?/, '');
-                return `/storage/${rutaLimpia}`;
-              };
-
               const centroImagenUrl = limpiarRutaImagen(centro.imagen) || imagenPorDefecto;
+              const ampaImagenUrl = centro.ampa?.imagen ? limpiarRutaImagen(centro.ampa.imagen) : null;
 
               return (
                 <div key={idCentro} className="col-12 col-sm-6 col-md-4 col-lg-3">
                   <Link to={`/centros/${idCentro}`} className="text-decoration-none text-dark d-block h-100">
-                    <article className="card h-100 border-0 shadow-sm bg-light text-center p-4 transition-hover">
+                    <article className="card h-100 border-0 shadow-sm bg-light text-center p-4 transition-hover d-flex flex-column">
+                      
+                      {/* Imagen del Centro */}
                       <div 
                         className="rounded-circle shadow-sm bg-white d-flex align-items-center justify-content-center mx-auto mb-3"
                         style={{ width: '90px', height: '90px', overflow: 'hidden' }}
@@ -99,16 +102,37 @@ function CentrosLista() {
                           className="w-100 h-100 object-fit-cover"
                           onError={(e) => {
                             e.currentTarget.onerror = null;
-                            e.currentTarget.src = imagenPorDefecto; // 👈 Fallback local si falla la ruta del servidor
+                            e.currentTarget.src = imagenPorDefecto;
                           }}
                         />
                       </div>
+
                       <h3 className="h6 fw-bold mb-2 text-uppercase">{centro.nombre}</h3>
+                      
+                      {/* Información y opcionalmente la imagen del AMPA */}
                       {centro.ampa && (
-                        <small className="text-muted d-block mt-auto">
-                          {centro.ampa.nombre}
-                        </small>
+                        <div className="mt-auto pt-2 border-top">
+                          {ampaImagenUrl && (
+                            <div 
+                              className="rounded-circle shadow-sm bg-white d-flex align-items-center justify-content-center mx-auto mb-2 border"
+                              style={{ width: '45px', height: '45px', overflow: 'hidden' }}
+                            >
+                              <img 
+                                src={ampaImagenUrl} 
+                                alt={centro.ampa.nombre} 
+                                className="w-100 h-100 object-fit-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
+                          <small className="text-muted d-block">
+                            {centro.ampa.nombre}
+                          </small>
+                        </div>
                       )}
+
                     </article>
                   </Link>
                 </div>

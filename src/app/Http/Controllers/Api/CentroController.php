@@ -8,6 +8,7 @@ use App\Models\Centro;
 use App\Models\Ampa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class CentroController extends Controller
 {
@@ -25,18 +26,6 @@ class CentroController extends Controller
 
     public function store(Request $request)
     {
-        $request->merge([
-            'descripcion' => $request->filled('descripcion') ? $request->descripcion : null,
-            'modalidad'   => $request->filled('modalidad') ? $request->modalidad : null,
-            'direccion'   => $request->filled('direccion') ? $request->direccion : null,
-            'telefono'    => $request->filled('telefono') ? $request->telefono : null,
-            'email'       => $request->filled('email') ? $request->email : null,
-            'web'         => $request->filled('web') ? $request->web : null,
-            'facebook'    => $request->filled('facebook') ? $request->facebook : null,
-            'instagram'   => $request->filled('instagram') ? $request->instagram : null,
-            'video'       => $request->filled('video') ? $request->video : null,
-        ]);
-
         $validated = $request->validate([
             'nombre'           => 'required|string|max:150',
             'descripcion'      => 'nullable|string',
@@ -49,38 +38,22 @@ class CentroController extends Controller
             'instagram'        => 'nullable|string|max:100',
             'video'            => 'nullable|string',
             'id_administrador' => 'nullable|exists:administrador,id_administrador',
+            // 🛑 Validamos que exista y que NO esté ya asignada en la tabla centros
+            'id_ampa'          => 'nullable|exists:ampa,id_ampa|unique:centros,id_ampa',
             'imagen'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'ampa_nombre'      => 'nullable|string|max:150',
-            'ampa_correo'      => 'nullable|email|max:150',
-            'ampa_telefono'    => 'nullable|string|max:20',
-            'ampa_instagram'   => 'nullable|string|max:100',
-            'ampa_facebook'    => 'nullable|string|max:100',
+        ], [
+            'id_ampa.unique' => 'La AMPA seleccionada ya se encuentra asociada a otro centro educativo.',
         ]);
 
         if ($request->hasFile('imagen')) {
             $validated['imagen'] = $request->file('imagen')->store('centros/imagenes', 'public');
         }
 
-        $ampaId = null;
-        if ($request->filled('ampa_nombre')) {
-            $ampa = Ampa::create([
-                'nombre'           => $request->ampa_nombre,
-                'correo'           => $request->input('ampa_correo'),
-                'telefono'         => $request->input('ampa_telefono'),
-                'instagram'        => $request->input('ampa_instagram'),
-                'facebook'         => $request->input('ampa_facebook'),
-                'id_administrador' => $request->input('id_administrador'),
-            ]);
-            $ampaId = $ampa->id_ampa;
-        }
-
-        $validated['id_ampa'] = $ampaId;
-
         $centro = Centro::create($validated);
         $centro->load(['administrador', 'ampa']);
 
         return response()->json([
-            'message' => 'Centro y AMPA creados correctamente',
+            'message' => 'Centro creado correctamente',
             'data'    => new CentroResource($centro)
         ], 201);
     }
@@ -89,18 +62,6 @@ class CentroController extends Controller
     {
         $centro = Centro::where('id_centro', $id)->firstOrFail();
 
-        $request->merge([
-            'descripcion' => $request->filled('descripcion') ? $request->descripcion : null,
-            'modalidad'   => $request->filled('modalidad') ? $request->modalidad : null,
-            'direccion'   => $request->filled('direccion') ? $request->direccion : null,
-            'telefono'    => $request->filled('telefono') ? $request->telefono : null,
-            'email'       => $request->filled('email') ? $request->email : null,
-            'web'         => $request->filled('web') ? $request->web : null,
-            'facebook'    => $request->filled('facebook') ? $request->facebook : null,
-            'instagram'   => $request->filled('instagram') ? $request->instagram : null,
-            'video'       => $request->filled('video') ? $request->video : null,
-        ]);
-
         $validated = $request->validate([
             'nombre'           => 'required|string|max:150',
             'descripcion'      => 'nullable|string',
@@ -113,12 +74,15 @@ class CentroController extends Controller
             'instagram'        => 'nullable|string|max:100',
             'video'            => 'nullable|string',
             'id_administrador' => 'nullable|exists:administrador,id_administrador',
+            // 🛑 En el update ignoramos el id_ampa del propio centro actual para que se permita reasignar el mismo
+            'id_ampa'          => [
+                'nullable',
+                'exists:ampa,id_ampa',
+                Rule::unique('centros', 'id_ampa')->ignore($centro->id_centro, 'id_centro'),
+            ],
             'imagen'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'ampa_nombre'      => 'nullable|string|max:150',
-            'ampa_correo'      => 'nullable|email|max:150',
-            'ampa_telefono'    => 'nullable|string|max:20',
-            'ampa_instagram'   => 'nullable|string|max:100',
-            'ampa_facebook'    => 'nullable|string|max:100',
+        ], [
+            'id_ampa.unique' => 'La AMPA seleccionada ya se encuentra asociada a otro centro educativo.',
         ]);
 
         if ($request->hasFile('imagen')) {
@@ -130,35 +94,11 @@ class CentroController extends Controller
             unset($validated['imagen']);
         }
 
-        if ($request->filled('ampa_nombre')) {
-            if ($centro->ampa) {
-                $centro->ampa->update([
-                    'nombre'    => $request->ampa_nombre,
-                    'correo'    => $request->input('ampa_correo'),
-                    'telefono'  => $request->input('ampa_telefono'),
-                    'instagram' => $request->input('ampa_instagram'),
-                    'facebook'  => $request->input('ampa_facebook'),
-                ]);
-            } else {
-                $ampa = Ampa::create([
-                    'nombre'           => $request->ampa_nombre,
-                    'correo'           => $request->input('ampa_correo'),
-                    'telefono'         => $request->input('ampa_telefono'),
-                    'instagram'        => $request->input('ampa_instagram'),
-                    'facebook'         => $request->input('ampa_facebook'),
-                    'id_administrador' => $request->input('id_administrador'),
-                ]);
-                $validated['id_ampa'] = $ampa->id_ampa;
-            }
-        } else {
-            $validated['id_ampa'] = null;
-        }
-
         $centro->update($validated);
         $centro->load(['administrador', 'ampa']);
 
         return response()->json([
-            'message' => 'Centro y AMPA actualizados correctamente',
+            'message' => 'Centro actualizado correctamente',
             'data'    => new CentroResource($centro)
         ]);
     }
@@ -169,6 +109,10 @@ class CentroController extends Controller
 
         if ($centro->imagen && Storage::disk('public')->exists($centro->imagen)) {
             Storage::disk('public')->delete($centro->imagen);
+        }
+
+        if ($centro->ampa && $centro->ampa->imagen && Storage::disk('public')->exists($centro->ampa->imagen)) {
+            Storage::disk('public')->delete($centro->ampa->imagen);
         }
 
         $centro->delete();

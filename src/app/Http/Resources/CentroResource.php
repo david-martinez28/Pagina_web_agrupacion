@@ -13,7 +13,9 @@ class CentroResource extends JsonResource
             'id_centro'     => $this->id_centro,
             'nombre'        => $this->nombre,
             'descripcion'   => $this->descripcion,
-            'imagen'        => $this->imagen ? asset('storage/' . $this->imagen) : null,
+            'imagen'        => $this->imagen 
+                ? (str_starts_with($this->imagen, 'http') ? $this->imagen : asset('storage/' . str_replace('/storage/', '', $this->imagen))) 
+                : null,
             'modalidad'     => $this->modalidad,
             'direccion'     => $this->direccion,
             'telefono'      => $this->telefono,

@@ -6,3 +6,56 @@ body {
     margin: 0;
     padding: 0;
 }
+/* ============================================================
+   ESPACIADO MODERNO Y LIMPIO (CLEAN DESIGN)
+   ============================================================ */
+
+/* Mayor separación general entre secciones de la página */
+section, .container-xl > div {
+  margin-bottom: 3.5rem;
+}
+
+/* Espaciado superior e inferior más amplio en las secciones principales */
+.publicaciones-section {
+  padding-top: 5rem !important;
+  padding-bottom: 5rem !important;
+}
+
+/* Espacio holgado en los títulos de sección para que no se sientan apretados */
+h1, h2, h3 {
+  letter-spacing: -0.5px;
+}
+
+.seccion-titulo, h2.fw-light {
+  margin-top: 2rem;
+  margin-bottom: 2.5rem !important;
+}
+
+/* Mayor respiro interno en las tarjetas y banners */
+.card-seccion, .publicacion-card, .banner-card {
+  padding: 1.5rem;
+}
+
+/* ============================================================
+   ESTILOS DE SOMBRA NEGRA PROFUNDA PARA TODAS LAS TARJETAS
+   ============================================================ */
+
+/* ============================================================
+   SOMBRA NEGRA PROFUNDA PARA TODAS LAS TARJETAS DE LA WEB
+   ============================================================ */
+
+.card {
+  background-color: #ffffff !important;
+  transition: all 0.3s ease-in-out !important;
+  /* Sombra negra pronunciada y limpia por defecto en cualquier tarjeta */
+  box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.544) !important; 
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: 0.5rem;
+}
+
+.card:hover {
+  transform: translateY(-5px) !important;
+  /* Sombra negra más profunda y amplificada al pasar el cursor */
+  box-shadow: 0 1.2rem 2.5rem rgba(37, 255, 4, 0.484) !important;
+}
+

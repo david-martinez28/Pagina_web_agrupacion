@@ -2,3 +2,42 @@
     background-color: #343a40; /* Color de fondo personalizado */
     color: #ffffff; /* Color del texto */
 }
+/* ============================================================
+   DISEÑO MODERNO Y LIMPIO (CLEAN UI & SPACING)
+   ============================================================ */
+
+/* Mayor respiro visual entre bloques principales de contenido */
+section, .container-xl > div {
+  margin-bottom: 4rem;
+}
+
+/* Padding vertical amplio para las secciones principales */
+.publicaciones-section {
+  padding-top: 5rem !important;
+  padding-bottom: 5rem !important;
+}
+
+/* Estilo y espaciado de los títulos principales */
+h1, h2, h3 {
+  letter-spacing: -0.5px;
+}
+
+.seccion-titulo, h2.fw-light {
+  margin-top: 2.5rem;
+  margin-bottom: 3rem !important;
+}
+
+/* Tarjetas y banners con sombras suaves y elegantes en reposo */
+.card-seccion, .publicacion-card, .banner-card {
+  background-color: #ffffff !important;
+  transition: all 0.3s ease-in-out !important;
+  box-shadow: 0 0.7rem 1.5rem rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  border-radius: 0.5rem;
+}
+
+/* Efecto hover con elevación y sombra verde destacada */
+.card-seccion:hover, .publicacion-card:hover, .banner-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 1rem 2.5rem rgba(0, 128, 0, 0.3) !important;
+}

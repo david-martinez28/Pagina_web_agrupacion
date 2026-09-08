@@ -40,7 +40,6 @@ function EmpresasPorSeccion() {
       return imagen;
     }
     // Si es una ruta relativa de storage, la unimos al servidor local de Laravel
-    // Cambia 'http://localhost:8000' por la URL base de tu API si es diferente
     const baseUrl = api.defaults.baseURL ? api.defaults.baseURL.replace('/api', '') : 'http://localhost';
     return `${baseUrl}/storage/${imagen.startsWith('/') ? imagen.slice(1) : imagen}`;
   };
@@ -88,15 +87,19 @@ function EmpresasPorSeccion() {
             <div key={idEmpresa} className="col-12 col-md-6 col-lg-4">
               <article className="card h-100 border shadow-sm bg-light p-4 d-flex flex-column">
                 
-                {/* Imagen de la empresa */}
+               {/* Imagen de la empresa */}
                 <div 
-                  className="rounded shadow-sm bg-white mb-3 overflow-hidden align-self-center"
-                  style={{ width: '100%', height: '180px' }}
+                  className="rounded shadow-sm bg-light mb-3 overflow-hidden w-100 d-flex align-items-center justify-content-center p-2"
+                  style={{ height: '200px' }}
                 >
                   <img
                     src={imagenEmpresa}
                     alt={empresa.nombre}
-                    className="w-100 h-100 object-fit-cover"
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'contain' 
+                    }}
                     onError={(e) => {
                       e.currentTarget.onerror = null; 
                       e.currentTarget.src = imagenPorDefecto;
@@ -113,7 +116,7 @@ function EmpresasPorSeccion() {
                 )}
 
                 {empresa.condiciones && (
-                  <div className="alert alert-secondary border-0 shadow-sm mb-3">
+                  <div className="alert alert-danger border-0 shadow-sm mb-3">
                     <strong>📝 Condiciones:</strong> <span className="text-dark">{empresa.condiciones}</span>
                   </div>
                 )}
@@ -121,6 +124,22 @@ function EmpresasPorSeccion() {
                 <div className="pt-3 border-top border-2 mb-3 mt-auto">
                   {empresa.telefono && <p className="mb-2"><strong>📞 Teléfono:</strong> <a href={`tel:${empresa.telefono}`} className="text-decoration-none text-secondary">{empresa.telefono}</a></p>}
                   {empresa.email && <p className="mb-2"><strong>✉️ Email:</strong> <a href={`mailto:${empresa.email}`} className="text-decoration-none text-secondary">{empresa.email}</a></p>}
+                  
+                  {/* 🌐 Sitio Web añadido */}
+                  {empresa.web && (
+                    <p className="mb-2">
+                      <strong>🌐 Web:</strong>{' '}
+                      <a 
+                        href={empresa.web.startsWith('http') ? empresa.web : `https://${empresa.web}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-decoration-none text-primary fw-medium"
+                      >
+                        {empresa.web} ↗
+                      </a>
+                    </p>
+                  )}
+
                   {empresa.direccion && (
                     <p className="mb-2">
                       <strong>📍 Dirección:</strong>{' '}

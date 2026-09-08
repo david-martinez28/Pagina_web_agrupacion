@@ -10,12 +10,14 @@ class CalendarioResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id_calendario'   => $this->id_calendario,
+            'id_calendario' => $this->id_calendario,
             'grado_educativo' => $this->grado_educativo,
-            'imagen'          => $this->imagen ? asset('storage/' . $this->imagen) : null,
-            'enlace'          => $this->enlace,
-            'administrador'   => new AdministradorResource($this->whenLoaded('administrador')),
-            'updated_at'      => $this->updated_at?->toDateTimeString(),
+            // Aseguramos que si hay imagen, devuelva la URL completa con storage
+            'imagen' => $this->imagen 
+                ? (str_starts_with($this->imagen, 'http') ? $this->imagen : asset('storage/' . str_replace('/storage/', '', $this->imagen))) 
+                : null,
+            'enlace' => $this->enlace,
+            'administrador' => new AdministradorResource($this->whenLoaded('administrador')),
         ];
     }
 }
